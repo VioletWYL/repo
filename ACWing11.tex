@@ -1,0 +1,380 @@
+\documentclass[cyan,pad,cn]{elegantnote}
+
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{CPPLight}  {HTML} {686868}
+\definecolor{CPPSteel}  {HTML} {888888}
+\definecolor{CPPDark}   {HTML} {262626}
+\definecolor{CPPBlue}   {HTML} {4172A3}
+\definecolor{CPPGreen}  {HTML} {487818}
+\definecolor{CPPBrown}  {HTML} {A07040}
+\definecolor{CPPRed}    {HTML} {AD4D3A}
+\definecolor{CPPViolet} {HTML} {7040A0}
+\definecolor{CPPGray}  {HTML} {B8B8B8}
+\lstset{
+    columns=fixed,       
+    numbers=left,                                        % 在左侧显示行号
+    frame=none,                                          % 不显示背景边框
+    backgroundcolor=\color[RGB]{245,245,244},            % 设定背景颜色
+    keywordstyle=\color[RGB]{40,40,255},                 % 设定关键字颜色
+    numberstyle=\footnotesize\color{darkgray},           % 设定行号格式
+    commentstyle=\it\color[RGB]{0,96,96},                % 设置代码注释的格式
+    stringstyle=\rmfamily\slshape\color[RGB]{128,0,0},   % 设置字符串格式
+    showstringspaces=false,                              % 不显示字符串中的空格
+    language=c++,                                        % 设置语言
+    morekeywords={alignas,continute,friend,register,true,alignof,decltype,goto,
+    reinterpret_cast,try,asm,defult,if,return,typedef,auto,delete,inline,short,
+    typeid,bool,do,int,signed,typename,break,double,long,sizeof,union,case,
+    dynamic_cast,mutable,static,unsigned,catch,else,namespace,static_assert,using,
+    char,enum,new,static_cast,virtual,char16_t,char32_t,explict,noexcept,struct,
+    void,export,nullptr,switch,volatile,class,extern,operator,template,wchar_t,
+    const,false,private,this,while,constexpr,float,protected,thread_local,
+    const_cast,for,public,throw,std},
+    emph={map,set,multimap,multiset,unordered_map,unordered_set,
+    unordered_multiset,unordered_multimap,vector,string,list,deque,
+    array,stack,forwared_list,iostream,memory,shared_ptr,unique_ptr,
+    random,bitset,ostream,istream,cout,cin,endl,move,default_random_engine,
+    uniform_int_distribution,iterator,algorithm,functional,bing,numeric,},
+    emphstyle=\color{CPPViolet}, 
+}
+
+\title{
+    补题笔记·ACWing周赛\#11
+}
+\author{唐冬   \LaTeX}
+
+\begin{document}
+
+\maketitle
+
+\section{
+    A.计算abc
+}
+
+\subsection{题意}
+\paragraph{原题\href{https://www.acwing.com/problem/content/3798/}{链接}}
+
+\subsection{思路}
+\paragraph{
+    在比赛的时候，由于我自己眼瞎，没有看到题目中说全部数据为正整数，于是写了一个整数范围的解QAQ，正确的解法是先从小到大排序，最大的数一定是三个数的和，再分别做减法，就能求出a,b,c三个数的值了。
+    \\我的解法是，先将给出的四个数求和
+}
+\begin{equation}
+    \begin{split}
+        Sum_{2} &={} a+b+c+Sum_{1} \\
+        &={}3a+3b+3c 
+    \end{split} 
+\end{equation}
+
+
+\paragraph{
+    再除以三，得到三个数之和，在进行匹配，找出题目给出的四个数中不是和的三个，再排序后分别做差，就能求出答案了。
+    \\下次一定认真读题-v-
+}
+
+\subsection{代码}
+
+\begin{lstlisting}
+    #include"bits/stdc++.h"
+  
+    using namespace std;
+    
+    int main(){
+        freopen("input.txt","r",stdin);
+        string s;
+        cin>>s;
+        int ans=-1;
+        for(int i=1;i<=s.size();i++){
+            string s2;
+            for(int j=0;j<i;j++){
+                int p=j;
+                while(p<s.size()){s2+=s[p];p+=i;}
+                int x=1,y=0,z=1;
+                p=1;
+                while(p<s2.size()){
+                    if(s2[p]==s2[p-1])z++;
+                    else {
+                        y=max(y,z);
+                        if(x<y)swap(x,y);
+                        z=1;
+                    }
+                    p++;
+                }
+                y=max(y,z);
+                if(x<y)swap(x,y);
+                z=0;
+                ans=max(ans,x*y);
+            }
+        }
+        cout<<ans<<endl;
+    } 
+\end{lstlisting}
+
+\section{
+    B.凑平方
+}
+
+\subsection{题意}
+
+\paragraph{原题\href{https://www.acwing.com/problem/content/3799/}{链接}} 
+
+\subsection{思路}
+
+\paragraph{
+    题目中说每次操作可删除一位数字，所以主体思路是递归遍历模拟删除数字的每一位，类似于遍历连续子串，再判断是否为平方数，记录递归深度（删除的数的个数），最小的记录就是答案。
+    \\那么如何判断平方数呢？打表数组开不下，可以先开平方，再平方，判断是否和原数相等（利用C++截断特性）；
+    \\如果遍历全部情况，会导致超时。需要三个剪枝：
+    \\·找到平方数后直接返回，因为再次递归的答案一定不是最优解。
+    \\·当前深度不小于记录值时直接返回。
+    \\·当前数遍历完成后，当再次遇到时直接返回，因为我们已经遍历过它和它的全部子集了。
+    \\需要额外注意，题目中说需要删除无用的前导零（我因为没有在意这个，喜-2，血亏QAQ）
+}
+
+\subsection{代码}
+\begin{lstlisting}
+    #include"bits/stdc++.h"
+
+    using namespace std;
+    
+    #define ll long long
+    
+    map<int,bool>Hc;
+    
+    const int nmax=1e9+1;
+    bool Hash(ll x){
+        ll k=(ll)sqrt(x);
+        if(x!=0&&k*k==x)return 1;
+        return 0;
+    }
+    
+    int ans;
+    
+    void dfs(ll a,int u){
+        if(a==0||Hc.count(a)>0)return;
+        Hc[a]=1;
+        u++;
+        if(u>=ans)return;
+        int n=0;
+        for(ll i=1;i<=1e9;i*=10){
+            if(a>(i-1))n++;
+            else break;
+        }
+        if(n==1){if(Hash(a))ans=u;return;}
+        
+        bool ok=0;
+        for(int i=0;i<n;i++){
+            ll k=a%(ll)pow(10,i);
+            k+=(a/(ll)pow(10,i+1))*(ll)pow(10,i);
+            if(Hash(k)){ok=1;
+            int n2=0;
+            for(ll j=1;j<=1e9;j*=10){
+            if(k>(j-1))n2++;
+            else break;
+        }
+            ans=min(ans,u+n-n2-1);
+            return;}
+            else dfs(k,u);
+        }
+    }
+    
+    int main(){
+        //freopen("input.txt","r",stdin);
+        int T;
+        cin>>T;
+        while(T--){
+            Hc.clear();
+            ans=100;
+            ll a;
+            cin>>a;
+            
+            if(Hash(a))ans=0;
+            else dfs(a,0);
+    
+            bool ok=0;
+            if(ans<100)cout<<ans<<endl;
+            else cout<<"-1\n";
+        }
+    }
+\end{lstlisting}
+
+\section{
+    C.最大化最短路
+}
+
+\subsection{题意}
+\paragraph{原题\href{https://www.acwing.com/problem/content/3800/}{链接}}
+\subsection{思路}
+\paragraph{
+    题中说固定起点终点，要求选点连接并求出最短路的最大值，那么最短路可能有三种情况：
+    \\情况1:从1点出发到n点并经过新路；
+    \\情况2:从n点出发到1点并经过新路；
+    \\情况3:不经过新路的最短路（1，n出发都一样）。
+    \\考虑情况1和情况2，用BFS分别求出从1，
+    n出发到连接点的最短路，记做
+    \(d_{0,p},d_{1,p}\)，总路长即为：
+    }
+    \begin{equation}
+    S_{总}=dist_{0,x}+dist_{1,y}+1
+    \end{equation}
+\paragraph{
+        再通过遍历x，y求出最大值。
+        在求最大值的过程中，遍历到x，y时会遇到两种情况，x->y和y->x；为减少遍历次数，可以先进行排序：
+}
+
+\begin{equation}
+    d_{0,x}+d_{1,y}<d_{1,x}+d_{0,y}
+\end{equation}
+{移项，得：}
+\begin{equation}
+d_{0,x}-d_{1,x}<d_{0,y}-d{1,y}
+\end{equation}
+
+\paragraph{
+    排序后可顺序遍历一次在O(n)内求出最大值。
+}
+
+\subsection{代码}
+\begin{lstlisting}
+    #include"bits/stdc++.h"
+
+    using namespace std;
+    
+    const int nmax=2e6+10;
+    
+    int n,m,k;
+    int Node[nmax],          //连接点
+        dist[2][nmax];      //路径记录
+    
+    vector<int>Link[nmax];   //邻接表
+    
+    void bfs(int fst){
+        queue<int>q;
+            q.push(fst);
+            int kk=fst==1?0:1;
+            dist[kk][fst]=0;
+            while(!q.empty()){
+                int p=q.front();
+                int v=dist[kk][p];
+                q.pop();
+                for(int i=0;i<Link[p].size();i++)if(dist[kk][Link[p][i]]<0){
+                    dist[kk][Link[p][i]]=v+1;
+                    //printf("dist[%d][%d]=%d\n",kk,Link[p][i],v+1);
+                    q.push(Link[p][i]);
+                }
+            }
+    }
+    
+    int main(){
+        //freopen("input.txt","r",stdin);
+        cin>>n>>m>>k;
+        for(int i=0;i<k;i++){
+            int a;
+            scanf("%d",&a);
+            Node[i]=a;
+        }
+        for(int i=0;i<m;i++){
+            int a,b;
+            scanf("%d%d",&a,&b);
+            Link[a].push_back(b);
+            Link[b].push_back(a);
+        }
+        memset(dist,-1,sizeof(dist));
+        bfs(1);
+        bfs(n);
+    
+        sort(Node,Node+k,[&](int a,int b){//c++17新特性
+            return dist[0][a]-dist[1][a]<dist[0][b]-dist[1][b];
+        });
+    
+        int res=0,fst=dist[0][Node[0]];
+        for(int i=1;i<k;i++){
+            int v=dist[1][Node[i]];
+            res=max(res,v+fst+1);
+            fst=max(fst,dist[0][Node[i]]);
+        }
+    
+        cout<<min(dist[0][n],res)<<endl;
+    }
+\end{lstlisting}
+
+{在BFS求最短路时我更习惯用迭代器，大雪菜老师用的是数组，可以学习一下大佬的代码(*¯︶¯*)。\href{https://www.acwing.com/activity/content/code/content/1592514/}{链接}}
+
+\begin{lstlisting}
+    #include <iostream>
+#include <cstring>
+#include <algorithm>
+
+using namespace std;
+
+const int N = 200010, M = 400010;
+
+int n, m, k;
+int h[N], e[M], ne[M], idx;
+int dist1[N], dist2[N];
+int q[N], p[N];
+
+void add(int a, int b)  // 添加一条边a->b
+{
+    e[idx] = b, ne[idx] = h[a], h[a] = idx ++ ;
+}
+
+void bfs(int start, int dist[])
+{
+    memset(dist, 0x3f, N * 4);
+    dist[start] = 0;
+    int hh = 0, tt = 0;
+    q[0] = start;
+
+    while (hh <= tt)
+    {
+        int t = q[hh ++ ];
+
+        for (int i = h[t]; ~i; i = ne[i])
+        {
+            int j = e[i];
+            if (dist[j] > dist[t] + 1)
+            {
+                dist[j] = dist[t] + 1;
+                q[ ++ tt] = j;
+            }
+        }
+    }
+}
+
+
+int main()
+{
+    scanf("%d%d%d", &n, &m, &k);
+    memset(h, -1, sizeof h);
+    for (int i = 0; i < k; i ++ ) scanf("%d", &p[i]);
+    while (m -- )
+    {
+        int a, b;
+        scanf("%d%d", &a, &b);
+        add(a, b), add(b, a);
+    }
+
+    bfs(1, dist1);
+    bfs(n, dist2);
+
+    sort(p, p + k, [&](int a, int b) {
+        return dist1[a] - dist2[a] < dist1[b] - dist2[b];
+    });
+
+    int res = 0, x = dist1[p[0]];
+    for (int i = 1; i < k; i ++ )
+    {
+        int t = p[i];
+        res = max(res, dist2[t] + x + 1);
+        x = max(x, dist1[t]);
+    }
+
+    printf("%d\n", min(res, dist1[n]));
+    return 0;
+}
+
+\end{lstlisting}
+
+\end{document}
